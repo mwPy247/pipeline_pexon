@@ -1,0 +1,64 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+pool: "local"
+     
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    steps:
+    - task: Docker@2
+      inputs:
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
+        arguments: '-t flask_api'
+- stage: Test
+  displayName: Run Tests
+  jobs:
+  - job: Test
+    displayName: Build
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 
+          docker run --rm --name flask_api_test flask_api python -m unittest
+- stage: Push
+  displayName: Push Image 
+  jobs:
+  - job: Push
+    displayName: Push Image
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 
+          docker tag flask_api registrierung1.azurecr.io/flask_api:v0.2 &&
+          docker push registrierung1.azurecr.io/flask_api:v0.2 &&
+          docker rmi registrierung1.azurecr.io/flask_api:v0.2 
+- stage: Run
+  displayName: Run Image 
+  jobs:
+  - job: Run
+    displayName: Run Image
+    steps:
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Azure subscription 1(a5d1362a-e5b3-4a87-b2b8-f313b9916ae0)'
+        appType: 'webAppContainer'
+        WebAppName: 'web-app-service-flask'
+        DockerNamespace: 'registrierung1'
+        DockerRepository: 'registrierung1.azurecr.io/flask_api:v0.2'
