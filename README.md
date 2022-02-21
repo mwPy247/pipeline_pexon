@@ -1,5 +1,5 @@
 # Setup a pipeline in Azure DevOps
-Again I will list the steps I made to build a pipeline:
+Again I will list the steps I made to build the pipeline:
 
 1. Create an Azure account
 2. Create a new project.
@@ -20,11 +20,17 @@ Create container registry and resource group in azure and save names
 		        registrierung1 for the registry name
 
 Then install the azure command line interface as documented (https://docs.microsoft.com/de-de/cli/azure/install-azure-cli) and login:
+
 `Install azure cli`
+
 `az acr login --name registrierung1`
+
 Last but not least run: 
+
 `docker tag mcr.microsoft.com/hello-world <login-server>/hello-world:v1`
+
 `Push to registry: docker push <login-server>/hello-world:v1`
+
 `Remove image: docker rmi <login-server>/hello-world:v1`
 
 This is identical to what gets executed within the third stage of the pipeline. Push done!
